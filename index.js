@@ -7,6 +7,10 @@ const port = 3000;
 let todos = [];
 
 // GET /todos: Get all todos
+app.get('/', (req, res) => {
+    res.send('Welcom to the Todo API');
+
+});
 app.get('/todos', (req, res) => {
     res.json(todos);
 });
