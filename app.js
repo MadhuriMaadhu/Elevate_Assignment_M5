@@ -1,58 +1,67 @@
 import express from 'express';
-const bodyParser = require ('body-parser');
-
-
 const app = express();
-const port = 3666;
-app.use(bodyParser.json());
+app.use(express.json());
+
+const port = 3000;
 
 let todos = [];
 
-// Get all todos
+// GET /todos: Get all todos
 app.get('/todos', (req, res) => {
     res.json(todos);
 });
 
-// Get a single todo by ID
+// POST /todos: Add a new todo
+app.post('/todos', (req, res) => {
+    const { title } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ message: 'Title is required' });
+    }
+
+    const newTodo = {
+        id: todos.length + 1,
+        title
+    };
+
+    todos.push(newTodo);
+    res.status(201).json(newTodo);
+});
+
+// GET /todos/:id: Get a single todo by ID
 app.get('/todos/:id', (req, res) => {
     const todoId = parseInt(req.params.id);
     const todo = todos.find(todo => todo.id === todoId);
-    console.log(todo);
+
     if (!todo) {
-      res.status(404).json({ message: 'Todo not found' });
-    } else {
-      res.json(todo);
+        return res.status(404).json({ message: 'Todo not found' });
     }
-  });  
 
-// Add a new todo
-app.post('/todos', (req, res) => {
-    const { name, age, email, phonenumber } = req.body;
-    const newTodo = { id: todos.length + 1, name, age, email, phonenumber };
-    todos.push(newTodo);
-    console.log(newTodo);
-    res.status(201).json(newTodo);
-  });
+    res.json(todo);
+});
 
-// Update an existing todo
+// PUT /todos/:id: Update an existing todo
 app.put('/todos/:id', (req, res) => {
     const todoId = parseInt(req.params.id);
     const todoIndex = todos.findIndex(todo => todo.id === todoId);
-    if (todoIndex === -1) {
-      res.status(404).json({ message: 'Todo not found' });
-    } else {
-      todos[todoIndex] = { ...todos[todoIndex], ...req.body };
-      res.json(todos[todoIndex]);
-    }
-  });
 
-// Delete a todo
+    if (todoIndex === -1) {
+        return res.status(404).json({ message: 'Todo not found' });
+    }
+
+    todos[todoIndex] = { ...todos[todoIndex], ...req.body };
+    res.json(todos[todoIndex]);
+});
+
+// DELETE /todos/:id: Delete a todo
 app.delete('/todos/:id', (req, res) => {
     const todoId = parseInt(req.params.id);
     todos = todos.filter(todo => todo.id !== todoId);
-    res.status(403).end();
-  });
 
+    res.status(204).end();
+});
+
+// Start the server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
